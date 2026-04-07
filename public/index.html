@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OpenEnv Grid</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0f172a;
+      color: white;
+    }
+
+    h1 { color: #38bdf8; }
+
+    #grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      gap: 6px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      background: #1e293b;
+    }
+
+    .goal { background: gold; }
+    .obstacle { background: #ef4444; }
+    .pit { background: #6b7280; }
+
+    /* 🤖 AGENT */
+    #agent {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #38bdf8;
+      cursor: pointer;
+    }
+
+    #info {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌍 OpenEnv Grid World</h1>
+
+<div id="info">Loading...</div>
+
+<button onclick="reset()">Reset</button>
+<button onclick="autoPlay()">🤖 Auto Play</button>
+
+<br><br>
+
+<button onclick="step(0)">⬆️</button><br>
+<button onclick="step(3)">⬅️</button>
+<button onclick="step(1)">➡️</button><br>
+<button onclick="step(2)">⬇️</button>
+
+<div id="grid">
+  <div id="agent">🤖</div>
+</div>
+
+<script>
+let currentState = null;
+
+// 🔄 Reset
+async function reset() {
+  const res = await fetch('/api/reset', { method: 'POST' });
+  const data = await res.json();
+  renderGrid(data.state);
+}
+
+// 🔄 Step
+async function step(action) {
+  const res = await fetch('/api/step', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action })
+  });
+
+  const data = await res.json();
+  renderGrid(data.state);
+}
+
+// 🤖 Auto AI
+async function autoPlay() {
+  let done = false;
+
+  while (!done) {
+    const action = Math.floor(Math.random() * 4);
+
+    const res = await fetch('/api/step', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+
+    const data = await res.json();
+    renderGrid(data.state);
+
+    done = data.done;
+
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+
+// 🎯 Render Grid
+function renderGrid(state) {
+  currentState = state;
+
+  const container = document.getElementById("grid");
+  container.innerHTML = '<div id="agent">🤖</div>';
+
+  document.getElementById("info").innerText =
+    "Steps: " + state.steps + " | Reward: " + state.total_reward;
+
+  state.grid.forEach(row => {
+    row.forEach(cell => {
+      const div = document.createElement("div");
+      div.className = "cell " + cell;
+
+      if (cell === "goal") div.innerText = "🎯";
+      if (cell === "pit") div.innerText = "🕳️";
+      if (cell === "obstacle") div.innerText = "🧱";
+
+      container.appendChild(div);
+    });
+  });
+
+  moveAgent(state.agent_position);
+}
+
+// 🤖 Move agent (smooth)
+function moveAgent(pos) {
+  const agent = document.getElementById("agent");
+
+  const x = pos.x * 66;
+  const y = pos.y * 66;
+
+  agent.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+// auto start
+reset();
+
+</script>
+
+</body>
+</html>
