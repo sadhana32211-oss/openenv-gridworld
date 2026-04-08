@@ -1,0 +1,98 @@
+# OpenEnv Environment Configuration
+# This file defines the OpenEnv environment for Hugging Face validation
+
+name: "GridWorld-v0"
+description: "A classic grid world reinforcement learning environment where an agent navigates to reach a goal while avoiding obstacles and pits."
+
+version: "1.0.0"
+author: "OpenEnv Team"
+license: "ISC"
+
+# Environment metadata
+metadata:
+  type: "grid_world"
+  difficulty: "beginner"
+  tags: ["reinforcement-learning", "grid-world", "q-learning", "ai-agent"]
+  
+# API configuration
+api:
+  version: "1.0.0"
+  endpoints:
+    - path: "/api/reset"
+      method: "POST"
+      description: "Reset the environment to initial state"
+    - path: "/api/step"
+      method: "POST"
+      description: "Take an action in the environment"
+    - path: "/api/state"
+      method: "GET"
+      description: "Get current environment state"
+    - path: "/api/env/info"
+      method: "GET"
+      description: "Get environment information"
+    - path: "/api/envs"
+      method: "GET"
+      description: "List all environment instances"
+    - path: "/api/env/{env_id}"
+      method: "DELETE"
+      description: "Delete an environment instance"
+
+# Environment specifications
+specification:
+  action_space:
+    type: "discrete"
+    n: 4
+    labels: ["UP", "RIGHT", "DOWN", "LEFT"]
+    description: "4 discrete actions for movement in cardinal directions"
+  
+  observation_space:
+    type: "grid"
+    shape: [5, 5]
+    cell_types: ["empty", "agent", "goal", "obstacle", "pit"]
+    description: "5x5 grid with different cell types"
+  
+  reward_range:
+    min: -1
+    max: 10
+  
+  max_steps: 100
+  
+  rewards:
+    goal: 10
+    obstacle: -0.5
+    pit: -1
+    boundary: -0.1
+    step: -0.01
+
+# Implementation details
+implementation:
+  language: "javascript"
+  framework: "nodejs"
+  server: "express"
+  web_interface: true
+  interactive: true
+  
+# Dependencies
+dependencies:
+  nodejs: ">=14.0.0"
+  python: ">=3.8"
+  packages:
+    - express
+    - fastapi
+    - uvicorn
+    - requests
+
+# Validation
+validation:
+  required_files:
+    - "index.js"
+    - "package.json"
+    - "public/index.html"
+    - "inference.py"
+    - "requirements.txt"
+  
+  api_test:
+    endpoint: "/api/env/info"
+    method: "GET"
+    expected_status: 200
+    expected_fields: ["name", "grid_size", "action_space", "observation_space"]
