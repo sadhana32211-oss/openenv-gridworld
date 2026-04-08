@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-gridworld"
+version = "1.0.0"
+description = "OpenEnv GridWorld - A classic reinforcement learning environment"
+authors = [{name = "OpenEnv Team"}]
+license = {text = "ISC"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: JavaScript",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/sadhana32211-oss/openenv-project"
+Repository = "https://github.com/sadhana32211-oss/openenv-project"
+Issues = "https://github.com/sadhana32211-oss/openenv-project/issues"
+
+[tool.setuptools.packages.find]
+include = ["openenv*"]
+
+[tool.setuptools.package-data]
+"openenv" = ["*.js", "*.json", "public/**/*", "css/**/*"]
+
+[tool.openenv]
+environment_name = "GridWorld-v0"
+api_version = "1.0.0"
+multi_mode = true
+validation_required = true
+
+[tool.openenv.api]
+endpoints = [
+    "/api/reset",
+    "/api/step", 
+    "/api/state",
+    "/api/env/info",
+    "/api/envs",
+    "/api/env/{env_id}"
+]
+
+[tool.openenv.specification]
+action_space_type = "discrete"
+action_space_n = 4
+observation_space_type = "grid"
+observation_space_shape = [5, 5]
+max_steps = 100
+reward_min = -1
+reward_max = 10
