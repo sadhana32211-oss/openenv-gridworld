@@ -1,6 +1,6 @@
 # 🌍 OpenEnv - Grid World Environment
 ## 🔗 Live Demo
-[[https://huggingface.co/spaces/sadhana32211-oss/openenv-gridworld](https://huggingface.co/spaces/sadhana3211/openenv-gridworld/tree/main)](https://huggingface.co/spaces/sadhana3211/openenv-gridworld)
+https://huggingface.co/spaces/sadhana3211/openenv-gridworld
 A complete, real-world OpenEnv environment that AI agents can learn from through the standard `step()` / `reset()` / `state()` API.
 ## 💻 Tech Stack
 - Node.js
