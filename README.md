@@ -1,12 +1,7 @@
 # 🌍 OpenEnv - Grid World Environment
-## 🔗 Live Demo
-https://huggingface.co/spaces/sadhana3211/openenv-gridworld
+
 A complete, real-world OpenEnv environment that AI agents can learn from through the standard `step()` / `reset()` / `state()` API.
-## 💻 Tech Stack
-- Node.js
-- Express.js
-- HTML, CSS, JavaScript
-- Reinforcement Learning (Grid World)
+
 ## Overview
 
 OpenEnv provides a **Grid World** environment - a classic reinforcement learning problem where an agent navigates a grid to reach a goal while avoiding obstacles and pits. This implementation follows the standard RL environment interface pattern used by popular frameworks like OpenAI Gym.
@@ -21,10 +16,7 @@ OpenEnv provides a **Grid World** environment - a classic reinforcement learning
 - ✅ Configurable grid size
 - ✅ Q-Learning agent example included
 - ✅ Comprehensive documentation
-## ✨ Additional Features
-- Smooth sliding animation 🤖
-- Auto-play AI agent 🎮
-- Live score panel 📊
+
 ## Quick Start
 
 ```bash
@@ -34,7 +26,7 @@ npm install
 # Start the server
 npm start
 
-# Open browser to http://localhost:7860
+# Open browser to http://localhost:3000
 ```
 
 ### Run Agent Demo

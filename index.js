@@ -144,8 +144,8 @@ function getEnv(id = "default") {
 
 // ============ ROUTES ============
 
-// ✅ REQUIRED for submission
-app.post('/reset', (req, res) => {
+// ✅ REQUIRED FIX
+app.post('/api/reset', (req, res) => {
   const env = getEnv();
   const state = env.reset();
 
@@ -156,7 +156,8 @@ app.post('/reset', (req, res) => {
   });
 });
 
-app.post('/step', (req, res) => {
+// step
+app.post('/api/step', (req, res) => {
   const action = parseInt(req.body.action);
   const env = getEnv();
 
@@ -166,7 +167,6 @@ app.post('/step', (req, res) => {
     env_id: "default",
     ...result
   });
-});
 });
 
 // state

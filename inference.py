@@ -1,103 +1,106 @@
 #!/usr/bin/env python3
 """
-Safe OpenEnv GridWorld inference.py
-Phase 2-ready: avoids crashing, returns dummy responses if Node.js not available
+OpenEnv GridWorld - Hugging Face Inference Script
+Simple inference script for Hugging Face Spaces compatibility.
 """
 
-import json
+import os
 import subprocess
 import time
 import requests
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-app = FastAPI(title="OpenEnv GridWorld", description="Reinforcement Learning Environment")
+# Create FastAPI app
+app = FastAPI(
+    title="OpenEnv GridWorld",
+    description="Reinforcement Learning Environment for Hugging Face Spaces"
+)
 
-# Mount static files
+# Serve static files
 app.mount("/static", StaticFiles(directory="public"), name="static")
 
-# Serve HTML pages
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
+    """Serve the main HTML interface"""
     try:
         with open("public/index.html", "r") as f:
             return f.read()
     except FileNotFoundError:
-        return "<h1>Index not found</h1>"
+        return "<h1>OpenEnv GridWorld</h1><p>Files not found. Please check deployment.</p>"
 
 @app.get("/about", response_class=HTMLResponse)
 async def read_about():
+    """Serve about page"""
     try:
         with open("public/about.html", "r") as f:
             return f.read()
     except FileNotFoundError:
-        return "<h1>About not found</h1>"
+        return "<h1>About</h1><p>Files not found.</p>"
 
 @app.get("/home", response_class=HTMLResponse)
 async def read_home():
+    """Serve home page"""
     try:
         with open("public/home.html", "r") as f:
             return f.read()
     except FileNotFoundError:
-        return "<h1>Home not found</h1>"
+        return "<h1>Home</h1><p>Files not found.</p>"
 
-# Proxy function to Node.js server
-async def proxy_to_nodejs(path: str, data: dict = None, method: str = "POST"):
-    nodejs_url = f"http://localhost:7860{path}"
+# Proxy functions to Node.js server
+def proxy_request(path, method="GET", data=None):
+    """Proxy requests to Node.js server"""
     try:
-        # Try connecting to Node.js server if available
+        url = f"http://localhost:7860{path}"
         if method == "POST":
-            response = requests.post(nodejs_url, json=data, timeout=2)
+            response = requests.post(url, json=data, timeout=10)
         elif method == "GET":
-            response = requests.get(nodejs_url, timeout=2)
+            response = requests.get(url, timeout=10)
         elif method == "DELETE":
-            response = requests.delete(nodejs_url, timeout=2)
-        return response.json()
-    except Exception:
-        # If Node.js not available, return dummy safe response
-        if path == "/api/reset":
-            return {
-                "env_id": "default",
-                "state": {"steps": 0, "done": False, "agent_position": {"x":0,"y":0}},
-                "info": {"name": "GridWorld-v0"}
-            }
-        elif path == "/api/step":
-            return {
-                "env_id": "default",
-                "state": {"steps": 1, "done": False, "agent_position": {"x":1,"y":0}},
-                "reward": -0.01
-            }
+            response = requests.delete(url, timeout=10)
         else:
-            return {"error": "Node.js server not running, dummy response returned"}
+            return {"error": "Invalid method"}
+        
+        return response.json()
+    except Exception as e:
+        return {"error": str(e), "message": "Node.js server may not be running"}
 
-# API endpoints
 @app.post("/api/reset")
 async def api_reset(request: Request):
-    return await proxy_to_nodejs("/api/reset", await request.json())
+    """Reset environment"""
+    data = await request.json()
+    return proxy_request("/api/reset", "POST", data)
 
 @app.post("/api/step")
 async def api_step(request: Request):
-    return await proxy_to_nodejs("/api/step", await request.json())
+    """Take action step"""
+    data = await request.json()
+    return proxy_request("/api/step", "POST", data)
 
 @app.get("/api/state")
 async def api_state():
-    return await proxy_to_nodejs("/api/state", method="GET")
+    """Get current state"""
+    return proxy_request("/api/state", "GET")
 
 @app.get("/api/env/info")
 async def api_env_info():
-    return await proxy_to_nodejs("/api/env/info", method="GET")
+    """Get environment info"""
+    return proxy_request("/api/env/info", "GET")
 
 @app.get("/api/envs")
 async def api_envs():
-    return await proxy_to_nodejs("/api/envs", method="GET")
+    """List environments"""
+    return proxy_request("/api/envs", "GET")
 
 @app.delete("/api/env/{env_id}")
 async def api_delete_env(env_id: str):
-    return await proxy_to_nodejs(f"/api/env/{env_id}", method="DELETE")
+    """Delete environment"""
+    return proxy_request(f"/api/env/{env_id}", "DELETE")
 
-# Optional Node.js starter
-def start_nodejs_server():
+def start_nodejs():
+    """Start Node.js server"""
     try:
         process = subprocess.Popen(
             ["node", "index.js"],
@@ -105,24 +108,43 @@ def start_nodejs_server():
             stderr=subprocess.PIPE,
             text=True
         )
+        
+        # Wait for startup
         time.sleep(3)
-        # Check if server is up
+        
+        # Test connection
         try:
-            r = requests.get("http://localhost:7860/api/env/info", timeout=2)
-            if r.status_code == 200:
-                print("✅ Node.js server started")
+            response = requests.get("http://localhost:7860/api/env/info", timeout=5)
+            if response.status_code == 200:
+                print("✅ Node.js server ready")
                 return process
         except:
-            process.terminate()
-            return None
-    except Exception:
+            pass
+        
+        process.terminate()
+        return None
+    except Exception as e:
+        print(f"❌ Node.js error: {e}")
         return None
 
-# Main entry
-def main():
-    print("🌍 Running OpenEnv inference.py safely for Phase 2 validation")
-    node_process = start_nodejs_server()
-    print("🚀 FastAPI endpoints ready (dummy safe responses if Node.js not running)")
-
 if __name__ == "__main__":
-    main()
+    print("🌍 Starting OpenEnv GridWorld Space...")
+    
+    # Start Node.js server
+    node_process = start_nodejs()
+    
+    if node_process:
+        print("🚀 Starting FastAPI server...")
+        uvicorn.run(
+            "inference:app",
+            host="0.0.0.0",
+            port=7860,
+            log_level="info"
+        )
+        
+        # Cleanup
+        if node_process:
+            node_process.terminate()
+    else:
+        print("❌ Failed to start Node.js server")
+        print("Please ensure Node.js and index.js are available")
