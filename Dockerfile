@@ -1,21 +1,19 @@
-FROM node:18-bullseye
+FROM node:18
 
-# Install Python and create python command
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    ln -sf /usr/bin/python3 /usr/bin/python
-
-# Set working directory
 WORKDIR /app
-
-# Copy project files
 COPY . .
 
-# Install Node dependencies
+# Install Python
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+# Optional: make "python" command available
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 RUN npm install
 
-# Expose port
+# If you have requirements.txt
+RUN pip3 install -r requirements.txt
+
 EXPOSE 7860
 
-# Start app
-CMD ["node", "index.js"]
+CMD ["python3", "inference.py"]
