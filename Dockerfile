@@ -1,28 +1,22 @@
-# Use official Python runtime as base image
-FROM python:3.10-slim
+FROM node:18
+
+# Install Python
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+# Copy files
+COPY . .
 
-# Copy Python requirements
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy Node.js package files
-COPY package*.json ./
-
-# Install Node.js dependencies
+# Install Node dependencies
 RUN npm install
 
-# Copy application files
+# Expose port
+EXPOSE 7860
+
+# Start server
+CMD ["node", "index.js"]
 COPY . .
 
 # Expose port
