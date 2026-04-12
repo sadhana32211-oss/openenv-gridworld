@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 OpenEnv GridWorld - Hugging Face Inference Script
 Simple inference script for Hugging Face Spaces compatibility.
