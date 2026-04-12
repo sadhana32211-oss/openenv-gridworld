@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+
+app.use(express.json());
 const port = process.env.PORT || 7860;
 
 app.use(express.json());
@@ -145,7 +147,7 @@ function getEnv(id = "default") {
 // ============ ROUTES ============
 
 // ✅ REQUIRED FIX
-app.post('/api/reset', (req, res) => {
+app.post(['/reset', '/api/reset'], (req, res) => {
   const env = getEnv();
   const state = env.reset();
 
@@ -157,8 +159,8 @@ app.post('/api/reset', (req, res) => {
 });
 
 // step
-app.post('/api/step', (req, res) => {
-  const action = parseInt(req.body.action);
+app.post(['/step', '/api/step'], (req, res) => {
+  const action = parseInt(req.body.action || 0);
   const env = getEnv();
 
   const result = env.step(action);
@@ -167,6 +169,7 @@ app.post('/api/step', (req, res) => {
     env_id: "default",
     ...result
   });
+});
 });
 
 // state
